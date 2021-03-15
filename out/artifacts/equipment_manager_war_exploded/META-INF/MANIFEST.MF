@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Created-By: IntelliJ IDEA
-Built-By: SuanCaiyu
-Build-Jdk: 1.8.0_221
-Implementation-Title: equipment-manager Maven Webapp
-Implementation-Version: 1.0-SNAPSHOT
-Implementation-Vendor-Id: com.school.manager
-Main-Class: ${start-class}
-
