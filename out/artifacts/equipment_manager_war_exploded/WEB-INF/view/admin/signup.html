@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>设备管理系统</title>
+    <link rel="stylesheet" href="/static/css/public.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/layui/css/layui.css">
+    <script src="/static/js/jquery-1.7.1.js"></script>
+    <script src="/static/layui/layui.js"></script>
+    <script src="/static/js/common.js"></script>
+</head>
+<body>
+<!--主体内容-->
+<section class="publicMian " style="height: 750px;">
+    <div class="right" style="margin-left: 10px;margin-top: 10px">
+        <div class="location">
+            <strong>你现在所在的位置是:</strong>
+            <span>注册页面</span>
+        </div>
+        <div class="providerAdd">
+            <form action="#">
+                <div>
+                    <label for="name">姓名：</label>
+                    <input type="text" name="name" id="name"/>
+                    <span >*请输入姓名</span>
+                </div>
+                <div>
+                    <label for="password">密码：</label>
+                    <input type="password" name="password" id="password"/>
+                    <span>*密码长度必须大于6位小于20位</span>
+
+                </div>
+                <div>
+                    <label for="pwd">确认密码：</label>
+                    <input type="password" name="pwd" id="pwd"/>
+                    <span>*请输入确认密码</span>
+                </div>
+
+                <div>
+                    <label for="phone">电话：</label>
+                    <input type="text" name="phone" id="phone"/>
+                </div>
+                <div>
+                    <label for="email">邮箱：</label>
+                    <input type="text" name="email" id="email"/>
+                </div>
+                <div class="providerAddBtn">
+                    <input type="button" value="保存" onclick="save()"/>
+                    <input type="button" value="返回" onclick="history.back(-1)"/>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</section>
+<script>
+    function save(){
+        if (!verify()) {
+            return;
+        }
+        var name = $("#name").val();
+        var password = $("#password").val();
+        var pwd = $("#pwd").val();
+        var phone = $("#phone").val();
+        var email = $("#email").val();
+        var adata = {
+            "name" : name,
+            "password" : password,
+            "phone" : phone,
+            "email" : email
+        };
+        var data = JSON.stringify(adata);
+        $.ajax({
+            type : "POST",
+            dataType: "json",//通过GET方式上传请求
+            contentType : "application/json",//上传内容格式为json结构
+            data : data,                                 //上传的参数
+            async: false ,
+            url : "/addUser",
+            success : function(data) {          //请求成功的回调函数
+                if (data.code == 1000) {
+                    layer.msg("注册成功", { icon: 6 });
+                    window.location.href = "/login";
+                }else {
+                    layer.msg(data.msg, { icon: 5 });
+                }
+
+            },
+            error : function(e) {           //请求失败的回调函数
+                console.info(e);
+            }
+        });
+    };
+
+    function verify() {
+        var name = $("#name").val();
+        var password = $("#password").val();
+        var pwd = $("#pwd").val();
+        if (name == "") {
+            layer.msg("请输入用户名", { icon: 5 });
+            return false;
+        } else if (password == "") {
+            layer.msg("请输入您的密码", { icon: 5 });
+            return false;
+        }else if (password != pwd){
+            layer.msg("两次密码输入不一致！", { icon: 5 });
+            return false;
+        }
+        return true;
+    }
+</script>
+</body>
+</html>

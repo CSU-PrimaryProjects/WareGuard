@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>个人资料--layui后台管理模板 2.0</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="format-detection" content="telephone=no">
+	<link rel="stylesheet" href="/static/layui/css/layui.css" media="all" />
+	<link rel="stylesheet" href="/static/css/public.css" media="all" />
+	<script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="/static/layui/layui.js"></script>
+	<!--<script type="text/javascript" src="/static/js/bookAdd.js"></script>-->
+</head>
+<script>
+	var layer;
+	var upload;
+	layui.use(['laydate','layer','upload','form'],function(){
+		var laydate = layui.laydate;
+		layer = layui.layer;
+		upload = layui.upload;
+		form = layui.form;
+		//执行一个laydate实例
+		laydate.render({
+			elem: '#createtime' //指定元素
+		});
+
+
+		//提交资料
+		form.on("submit(save)",function(data){
+			var id = window.sessionStorage.getItem("renewId");
+			var adata = {
+				"e_id" : id,
+				"e_name" : $(".name").val(),
+				"status" : "不同意",
+				"createtime" : $(".createtime").val()
+			};
+			var param = JSON.stringify(adata);
+			$.ajax({
+				type : "POST",
+				dataType: "json",//通过GET方式上传请求
+				contentType : "application/json",//上传内容格式为json结构
+				data : param,                                 //上传的参数
+				async: false ,
+				url : "/addRenew",
+				success : function(data) {          //请求成功的回调函数
+					if (data.code == 1000) {
+						layer.msg("已提交申请!", { icon: 6 });
+						window.location.href = "/renewList";
+					}else {
+						layer.close(index);
+						layer.msg(data.msg, { icon: 5 });
+					}
+
+				},
+				error : function(e) {           //请求失败的回调函数
+					console.info(e);
+				}
+			});
+	//		window.sessionStorage.setItem("userInfo",JSON.stringify(userInfoHtml));
+			/*setTimeout(function(){
+				layer.close(index);
+				layer.msg("提交成功！");
+			},2000);*/
+			return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+		})
+		initData();
+	});
+
+	function initData() {
+		var id = window.sessionStorage.getItem("renewId");
+		$.ajax({
+			type : "POST",
+			dataType: "json",//通过GET方式上传请求
+			contentType : "application/json",//上传内容格式为json结构
+			async: false ,
+			url : "/queryBorrowById?id="+id,
+			success : function(data) {          //请求成功的回调函数
+				if (data.code == 1000) {
+					var equipment = data.data;
+					$(".name").val(equipment.name);
+					$("#e_id").val(equipment.equipment_id);
+				}else {
+					layer.msg(data.msg, { icon: 5 });
+				}
+			},
+			error : function(e) {           //请求失败的回调函数
+				console.info(e);
+			}
+		});
+	}
+
+
+	function reset() {
+		$(".name").val("");
+		$("#e_id").val("");
+		return false;
+	}
+</script>
+<body class="childrenBody">
+<form class="layui-form layui-row" style="margin-top: 30px">
+	<div class="layui-col-md6 layui-col-xs12">
+		<div class="layui-form-item">
+			<label class="layui-form-label">设备名称</label>
+			<div class="layui-input-block">
+				<!--<input type="text" disabled class="layui-input layui-disabled">-->
+				<input type="text" lay-verify="required" class="layui-input layui-disabled name" readonly>
+				<input type="hidden" id="e_id">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">续借日期</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input borrow_date" id="createtime" autocomplete="off">
+				<!--<input type="text" class="layui-input borrow_date">-->
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn" lay-submit="" lay-filter="save" >提交</button>
+				<button type="reset" class="layui-btn layui-btn-primary" onclick="history.back(-1)">取消</button>
+			</div>
+		</div>
+	</div>
+</form>
+
+<!--<script type="text/javascript" src="/static/js/cacheUserInfo.js"></script>-->
+</body>
+</html>

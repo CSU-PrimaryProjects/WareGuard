@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>设备管理系统</title>
+	<link rel="stylesheet" href="/static/layui/css/layui.css">
+	<link rel="stylesheet" href="/static/css/index.css" media="all" />
+	<script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+	<script src="/static/layui/layui.js"></script>
+</head>
+<script>
+	var layer;
+	var upload;
+	layui.use(['laydate','layer','upload','form'],function() {
+		var laydate = layui.laydate;
+		layer = layui.layer;
+		upload = layui.upload;
+		form = layui.form;
+	})
+	$(function(){
+		$("a").on("click",function(){
+			var path =$(this).attr("data-src");
+			$("iframe").attr("src",path);
+		});
+
+		$(".showNotice").on("click",function(){
+			showNotice();
+		});
+	});
+	//公告层
+	function showNotice(){
+		var content = "";
+		$.ajax({
+			type : "POST",
+			dataType: "json",//通过GET方式上传请求
+			contentType : "application/json",//上传内容格式为json结构
+			async: false ,
+			url : "/queryNewsList",
+			success : function(data) {          //请求成功的回调函数
+				if (data.code == 1000) {
+					var news = data.data.list;
+					if (news.length > 0) {
+						content = news[0].content;
+					}
+				}else {
+					layer.msg(data.msg, { icon: 5 });
+				}
+
+			},
+			error : function(e) {           //请求失败的回调函数
+				console.info(e);
+			}
+		});
+
+		layer.open({
+			type: 1,
+			title: "系统公告",
+			area: '300px',
+			shade: 0.8,
+			id: 'LAY_layuipro',
+			btn: ['火速围观'],
+			moveType: 1,
+			content: '<div style="padding:15px 20px; text-align:justify; line-height: 22px; text-indent:2em;border-bottom:1px solid #e2e2e2;"><p><span class="layui-red">'+content+'</span></p></div>',
+			success: function(layero){
+				/*var btn = layero.find('.layui-layer-btn');
+				btn.css('text-align', 'center');
+				btn.on("click",function(){
+					tipsShow();
+				});*/
+			},
+			cancel: function(index, layero){
+				//tipsShow();
+			}
+		});
+	}
+</script>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+	<div class="layui-header">
+		<div class="layui-logo">设备管理系统</div>
+		<!-- 头部区域（可配合layui已有的水平导航） -->
+		<ul class="layui-nav layui-layout-left">
+			<li class="layui-nav-item"><a href="">控制台</a></li>
+			<!--<li class="layui-nav-item"><a href="">商品管理</a></li>
+			<li class="layui-nav-item"><a href="">用户</a></li>
+			<li class="layui-nav-item">
+				<a href="javascript:;">其它系统</a>
+				<dl class="layui-nav-child">
+					<dd><a href="">邮件管理</a></dd>
+					<dd><a href="">消息管理</a></dd>
+					<dd><a href="">授权管理</a></dd>
+				</dl>
+			</li>-->
+		</ul>
+		<!--<ul class="layui-nav layui-layout-right">
+			<li class="layui-nav-item">
+				<a href="javascript:;">
+					<img src="/static/img/userface3.jpg" class="layui-nav-img">
+					贤心
+				</a>
+				<dl class="layui-nav-child">
+					<dd><a href="">基本资料</a></dd>
+					<dd><a href="">安全设置</a></dd>
+				</dl>
+			</li>
+			<li class="layui-nav-item"><a href="/logout">退了</a></li>
+		</ul>-->
+		<!-- 顶部右侧菜单 -->
+		<ul class="layui-nav top_menu">
+			<!--<li class="layui-nav-item" pc>
+				<a href="javascript:;" class="clearCache"><i class="layui-icon" data-icon="&#xe640;">&#xe640;</i><cite>清除缓存</cite><span class="layui-badge-dot"></span></a>
+			</li>
+			<li class="layui-nav-item lockcms" pc>
+				<a href="javascript:;"><i class="seraph icon-lock"></i><cite>锁屏</cite></a>
+			</li>-->
+			<li class="layui-nav-item" id="userInfo">
+				<a href="javascript:;"><img src="/static/img/userface3.jpg" class="layui-nav-img userAvatar" width="35" height="35"><cite class="adminName"><span id="username">rose</span></span></cite></a>
+				<dl class="layui-nav-child">
+					<dd><a href="javascript:;" data-src="/userInfo"><i class="layui-icon">&#xe770;</i><cite>个人资料</cite></a></dd>
+					<dd><a href="javascript:;" data-src="/changePassword"><i class="layui-icon">&#xe673;</i></i><cite>修改密码</cite></a></dd>
+					<dd><a href="javascript:;" class="showNotice"><i class="layui-icon">&#xe645;</i><cite>系统公告</cite><span class="layui-badge-dot"></span></a></dd>
+					<!--<dd pc><a href="javascript:;" class="functionSetting"><i class="layui-icon">&#xe620;</i><cite>功能设定</cite><span class="layui-badge-dot"></span></a></dd>
+					<dd pc><a href="javascript:;" class="changeSkin"><i class="layui-icon">&#xe61b;</i><cite>更换皮肤</cite></a></dd>-->
+					<dd><a href="/logout" class="signOut"><i class="layui-icon">&#xe62f;</i><cite>退出</cite></a></dd>
+				</dl>
+			</li>
+		</ul>
+	</div>
+
+	<div class="layui-side layui-bg-black">
+		<div class="layui-side-scroll">
+			<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+			<ul class="layui-nav layui-nav-tree"  lay-filter="test">
+				<li class="layui-nav-item"  style="margin-top: 20px;">
+					<a href="javascript:;"><i class="layui-icon">&#xe634;&nbsp;</i>设备列表</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/equipment">设备列表</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item layui-nav-itemed">
+					<a class="" href="javascript:;"><i class="layui-icon">&#xe620;&nbsp;</i>借阅管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/recordList">借阅记录</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe770;&nbsp;</i>罚款记录</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/fine">罚款记录</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe679;&nbsp;</i>续借记录</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/renewList1">续借记录</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe60a;&nbsp;</i>借入记录</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/borrowIn">借入记录</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe60d;&nbsp;</i>借出记录</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/borrowOut">借出记录</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe634;&nbsp;</i>异常申诉</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/appeal">申诉列表</a></dd>
+					</dl>
+				</li>
+
+			</ul>
+		</div>
+	</div>
+
+	<div class="layui-body">
+		<!-- 内容主体区域 -->
+		<div>
+			<iframe frameborder="0" scrolling="yes" style="width:100%;height:100%" src="/index" id="aa">
+			</iframe>
+		</div>
+	</div>
+
+	<div class="layui-footer">
+		设备管理系统
+	</div>
+</div>
+<script>
+	//JavaScript代码区域
+	layui.use('element', function(){
+		var element = layui.element;
+		var username = window.sessionStorage.getItem("username");
+		$("#username").text(username);
+	});
+</script>
+</body>
+</html>

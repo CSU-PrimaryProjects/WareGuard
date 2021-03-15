@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>个人资料--layui后台管理模板 2.0</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="format-detection" content="telephone=no">
+	<link rel="stylesheet" href="/static/layui/css/layui.css" media="all" />
+	<link rel="stylesheet" href="/static/css/public.css" media="all" />
+	<script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="/static/layui/layui.js"></script>
+	<!--<script type="text/javascript" src="/static/js/bookAdd.js"></script>-->
+</head>
+<script>
+	var layer;
+	var upload;
+	layui.use(['laydate','layer','upload','form'],function(){
+		var laydate = layui.laydate;
+		layer = layui.layer;
+		upload = layui.upload;
+		form = layui.form;
+		//执行一个laydate实例
+		laydate.render({
+			elem: '#sortingtime' //指定元素
+		});
+		//普通图片上传
+		var uploadInst = upload.render({
+			elem: '.bookImg'
+			,url: '/upload' //改成您自己的上传接口
+			,before: function(obj){
+				//预读本地文件示例，不支持ie8
+				obj.preview(function(index, file, result){
+					$('#userFace').attr('src', result); //图片链接（base64）
+				});
+
+			}
+			,done: function(res){
+				//如果上传失败
+				if(res.code == 1000){
+					return layer.msg('上传成功');
+				}else{
+					return layer.msg('上传失败');
+				}
+				//上传成功
+			}
+			,error: function(){
+				//演示失败状态，并实现重传
+				var demoText = $('#demoText');
+				demoText.html('<span style="color: #FF5722;">upload fail</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+				demoText.find('.demo-reload').on('click', function(){
+					uploadInst.upload();
+				});
+			}
+		});
+
+	});
+	function  save() {
+		var adata = {
+			"name" : $(".name").val(),
+			"code" : $(".code").val(),
+			"model" : $(".model").val(),
+			"level" : $("#level").val(),
+			"factory" : $(".factory").val(),
+			"status" : 1,
+			"price" : $(".price").val()
+		};
+		var param = JSON.stringify(adata);
+		$.ajax({
+			type : "POST",
+			dataType: "json",//通过GET方式上传请求
+			contentType : "application/json",//上传内容格式为json结构
+			data : param,                                 //上传的参数
+			async: false ,
+			url : "/addEquipment",
+			success : function(data) {          //请求成功的回调函数
+				if (data.code == 1000) {
+					layer.msg("添加成功!", { icon: 6 });
+					window.location.href = "/equipmentList";
+				}else {
+					layer.msg(data.msg, { icon: 5 });
+				}
+
+			},
+			error : function(e) {           //请求失败的回调函数
+				console.info(e);
+			}
+		});
+	}
+	function reset() {
+		$(".name").val("");
+		$(".code").val("");
+		$(".model").val("");
+		$(".factory").val("");
+		$(".quantity").val("");
+		$(".price").val("");
+		return false;
+	}
+</script>
+<body class="childrenBody">
+<form class="layui-form layui-row" style="margin-top: 30px">
+	<div class="layui-col-md3 layui-col-xs12 user_right">
+		<div class="layui-upload-list">
+			<!--<img class="layui-upload-img layui-circle userFaceBtn userAvatar" id="userFace">-->
+			<img class="layui-upload-img layui-upload-img userFaceBtn userAvatar" id="userFace">
+		</div>
+		<button type="button" class="layui-btn layui-btn-primary bookImg"><i class="layui-icon">&#xe67c;</i> 请选择图片上传</button>
+	</div>
+	<div class="layui-col-md6 layui-col-xs12">
+		<div class="layui-form-item">
+			<label class="layui-form-label">设备名称</label>
+			<div class="layui-input-block">
+				<!--<input type="text" disabled class="layui-input layui-disabled">-->
+				<input type="text" placeholder="请输入设备名称" lay-verify="required" class="layui-input name">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">设备编号</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input code">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">规格型号</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input model">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">设备等级</label>
+			<div class="layui-input-block">
+				<select name="level" lay-verify="required" id="level">
+					<option value=""></option>
+					<option value="1">普通设备</option>
+					<option value="2">重要设备</option>
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">生产厂商</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input factory">
+			</div>
+		</div>
+		<!--<div class="layui-form-item">
+			<label class="layui-form-label">设备数量</label>
+			<div class="layui-input-block">
+				<input type="text" value="" placeholder="请输入设备数量" lay-verify="required" class="layui-input quantity">
+			</div>
+		</div>-->
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">设备单价</label>
+			<div class="layui-input-block">
+				<input type="tel" value="" placeholder="请输入设备单价" lay-verify="required" class="layui-input price">
+			</div>
+		</div>
+
+
+	</div>
+</form>
+<div class="layui-form-item">
+	<div class="layui-input-block">
+		<button class="layui-btn" lay-submit="" onclick="save()">提交</button>
+		<button type="reset" class="layui-btn layui-btn-primary" onclick="reset()">重置</button>
+	</div>
+</div>
+<!--<script type="text/javascript" src="/static/js/cacheUserInfo.js"></script>-->
+</body>
+</html>

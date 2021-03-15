@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>文章列表--layui后台管理模板 2.0</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="format-detection" content="telephone=no">
+	<link rel="stylesheet" href="/static/layui/css/layui.css" media="all" />
+	<link rel="stylesheet" href="/static/css/public.css" media="all" />
+	<script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="/static/layui/layui.js"></script>
+</head>
+<script>
+	var table;
+	var upload;
+	var layer;
+	layui.use(['table',"upload","layer",'laydate'], function(){
+		table = layui.table;
+		upload = layui.upload;
+		layer = layui.layer;
+		//执行一个laydate实例
+		var laydate = layui.laydate;
+		laydate.render({
+			elem: '#createtime' //指定元素
+		});
+		initTable();
+	});
+	var isreturn = true;
+	function initTable() {
+		var param = {
+			name:$("#param").val(),
+		};
+		table.render({
+			id: 'test',
+			elem: '#test',
+			url:'/queryBorrowList',
+			where: param,
+			cols: [
+				[
+					{type:'numbers', width:100, title: '编号'},
+					{field:'name', minWidth:100, title: '设备名称'},
+					{field: 'imag', title: '设备图片', templet: '#img'},
+					{field:'code', minWidth:100, title: '设备编号'},
+					{field:'model', minWidth:100, title: '规格型号'},
+					{
+						field: "level",
+						title: "设备等级",
+						minWidth: 100,
+						unresize: "true",
+						templet: function(d) {
+							var level = "";
+							if (d.level == 1) {
+								level = "普通设备";
+							}else if (d.level == 2) {
+								level = "重要设备";
+							}
+							return level;
+						}
+					},
+					{field:'start_date', minWidth:100, title: '开始日期'},
+					{field:'borrow_date', minWidth:100, title: '到期时间'},
+					{field:'e_status', minWidth:100, title: '设备状态'},
+					//{fixed: 'right', width:150,title: 'operation', align:'center', toolbar: '#barDemo'},
+					{fixed: 'right', width:180,title: '操作', align:'center', templet: function(d) {
+							// 默认隐藏启用按钮
+							var isEditClass = 'layui-btn-disabled';
+							var level = 'layui-btn-disabled';
+							var status = 'layui-btn-disabled';
+							if (d.e_status == '使用中') {
+								isEditClass='';
+								status='';
+							}
+							if (d.level == 1) {
+								level='';
+							}
+							return (
+									'<a class="layui-btn layui-btn-xs '+level+'" lay-event="detail">续借</a>'+
+									'<a class="layui-btn layui-btn-xs '+isEditClass+'" lay-event="edit">归还</a>'
+							);
+						}
+					}
+				]
+			],
+			request: {  //用于对分页请求的参数：page、limit重新设定名称
+				pageName: 'pageNum', //页码的参数名称，默认：page
+				limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			},
+			parseData: function(res) {
+				//res 即为原始返回的数据
+				return {
+					code: res.code ? 0 : 1, //解析接口状态
+					msg: res.msg, //解析提示文本
+					count: res.data.total, //解析数据长度
+					data: res.data.list //解析数据列表
+				};
+			},
+			done:function(res, curr, count) {}, //渲染完成，回调函数
+			loading: true,
+			page: true
+		});
+		table.on('tool(dataTable)', function(obj) { //注：tool是工具条事件名，dataTable是table原始容器的属性 lay-filter="对应的值"
+			var data = obj.data //获得当前行数据
+					, layEvent = obj.event; //获得 lay-event 对应的值
+
+			if (layEvent === 'detail') {
+				if (data.level == 2) {
+					return;
+				}
+				window.sessionStorage.setItem("renewId", data.borrowId);
+				window.location.href = "/renew";
+			} else if (layEvent === 'del') {
+				layer.msg("确定删除吗？", {
+					time: 0,
+					btn: ["sure", "cancel"],
+					yes:function(){
+						deleteBook(data.id);
+					}
+				});
+			} else if (layEvent === 'edit') {
+				if (data.e_status == '已归还') {
+					return;
+				}
+				window.location.href = "/back";
+				window.sessionStorage.setItem("borrowId", data.borrowId);
+			}else if (layEvent === 'borrow') {
+				window.sessionStorage.setItem("borrowId", data.borrowId);
+				window.location.href = "/zhaunjie";
+			}
+		});
+		//监听checkbox事件
+		table.on('checkbox(dataTable)', function (obj) {
+			var data = obj.data;
+		});
+	}
+	function operator(id,status) {
+		var record={
+			"id":id,
+			"status":status
+		}
+		$.ajax({
+			type : "POST",
+			dataType: "json",//通过GET方式上传请求
+			contentType : "application/json",//上传内容格式为json结构
+			url : "/updateRecordStatusByUser",
+			data : JSON.stringify(record),
+			success : function(data) {          //请求成功的回调函数
+				if (data.code == 1000) {
+					layer.msg("operate successfully !", { icon: 6 });
+					table.reload("test");
+				}else {
+					layer.msg(data.msg, { icon: 5 });
+				}
+
+			},
+			error : function(e) {           //请求失败的回调函数
+				console.info(e);
+			}
+		});
+	}
+	function returnBook(id) {
+		$.ajax({
+			type : "POST",
+			dataType: "json",//通过GET方式上传请求
+			contentType : "application/json",//上传内容格式为json结构
+			url : "/updateBookStatus?id="+id,
+			success : function(data) {          //请求成功的回调函数
+				if (data.code == 1000) {
+					layer.msg("return successful !", { icon: 6 });
+					table.reload("test");
+				}else {
+					layer.msg(data.msg, { icon: 5 });
+				}
+
+			},
+			error : function(e) {           //请求失败的回调函数
+				console.info(e);
+			}
+		});
+	}
+	function query() {
+		initTable();
+	}
+	function deleteBook(id) {
+		$.ajax({
+			type : "get",
+			async: false ,
+			url : "/deleteBook",
+			data : {"id":id},
+			success : function(data) {          //请求成功的回调函数
+				if (data.code == 1000) {
+					layer.msg("删除成功", { icon: 6 });
+					table.reload("test");
+				}else {
+					layer.msg(data.msg, { icon: 5 });
+				}
+			},
+			error : function(e) {           //请求失败的回调函数
+				console.info(e);
+			}
+		});
+	}
+
+</script>
+<body class="childrenBody">
+<form class="layui-form">
+	<blockquote class="layui-elem-quote quoteBox">
+		<form class="layui-form">
+			<div class="layui-inline">
+				<div class="layui-input-inline">
+					<input type="text" class="layui-input searchVal" placeholder="请输入设备名称" id="param"/>
+				</div>
+				<a class="layui-btn search_btn" onclick="query()">查询</a>
+			</div>
+			<!--<div class="layui-inline">
+				<a class="layui-btn layui-btn-normal" href="/bookAdd">addBook</a>
+			</div>-->
+			<!--<div class="layui-inline">
+				<a class="layui-btn layui-btn-danger layui-btn-normal delAll_btn">批量删除</a>
+			</div>-->
+		</form>
+	</blockquote>
+	<table id="test" lay-filter="dataTable"></table>
+
+	<!--操作-->
+	<script type="text/html" id="barDemo">
+		<!-- <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>-->
+		<a class="layui-btn layui-btn-xs" lay-event="edit">return</a>
+		<!--<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">delete</a>-->
+	</script>
+	<script type="text/html" id="img">
+		<div><img src="{{ d.path }}" style="width: 50px; height: 50px;"></div>
+	</script>
+</form>
+
+<!--<script type="text/javascript" src="/static/js/bookList.js"></script>-->
+</body>
+</html>

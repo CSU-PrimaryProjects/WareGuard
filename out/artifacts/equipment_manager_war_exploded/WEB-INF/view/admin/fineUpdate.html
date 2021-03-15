@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>个人资料--layui后台管理模板 2.0</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="format-detection" content="telephone=no">
+	<link rel="stylesheet" href="/static/layui/css/layui.css" media="all" />
+	<link rel="stylesheet" href="/static/css/public.css" media="all" />
+	<script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="/static/layui/layui.js"></script>
+	<!--<script type="text/javascript" src="/static/js/bookAdd.js"></script>-->
+</head>
+<script>
+	var layer;
+	var upload;
+	layui.use(['laydate','layer','upload','form'],function(){
+		var laydate = layui.laydate;
+		layer = layui.layer;
+		upload = layui.upload;
+		form = layui.form;
+		//执行一个laydate实例
+		laydate.render({
+			elem: '#sortingtime' //指定元素
+		});
+
+
+		//提交资料
+		form.on("submit(save)",function(data){
+			var index = layer.msg('请等待，正在提交',{icon: 16,time:false,shade:0.8});
+			var id = window.sessionStorage.getItem("fineId");
+			var adata = {
+				"id" : id,
+				"name" : $(".name").val(),
+				"e_name" : $(".e_name").val(),
+				"reason" : $(".reason").val(),
+				"total" : $(".total").val(),
+				"status" : $("#status").val()
+			};
+			var param = JSON.stringify(adata);
+			$.ajax({
+				type : "POST",
+				dataType: "json",//通过GET方式上传请求
+				contentType : "application/json",//上传内容格式为json结构
+				data : param,                                 //上传的参数
+				async: false ,
+				url : "/updateFine",
+				success : function(data) {          //请求成功的回调函数
+					if (data.code == 1000) {
+						/*layer.msg("修改成功!", { icon: 6 });
+						layer.close(index);
+						window.location.href = "/fineList";*/
+					}else {
+						layer.close(index);
+						layer.msg(data.msg, { icon: 5 });
+					}
+
+				},
+				error : function(e) {           //请求失败的回调函数
+					console.info(e);
+				}
+			});
+	//		window.sessionStorage.setItem("userInfo",JSON.stringify(userInfoHtml));
+			setTimeout(function(){
+				layer.close(index);
+				layer.msg("修改成功！");
+			},2000);
+			window.location.href = "/fineList";
+			return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+		})
+		initData();
+	});
+
+	function initData() {
+		var id = window.sessionStorage.getItem("fineId");
+		$.ajax({
+			type : "POST",
+			dataType: "json",//通过GET方式上传请求
+			contentType : "application/json",//上传内容格式为json结构
+			async: false ,
+			url : "/queryFineById?id="+id,
+			success : function(data) {          //请求成功的回调函数
+				if (data.code == 1000) {
+					var fine = data.data;
+					$(".name").val(fine.name);
+					$(".e_name").val(fine.e_name);
+					$(".total").val(fine.total);
+					$(".reason").val(fine.reason);
+					$("#status").val(fine.status);
+				}else {
+					layer.msg(data.msg, { icon: 5 });
+				}
+			},
+			error : function(e) {           //请求失败的回调函数
+				console.info(e);
+			}
+		});
+	}
+
+
+	function reset() {
+		$(".name").val("");
+		$(".e_name").val("");
+		$(".reason").val("");
+		$(".total").val("");
+		return false;
+	}
+</script>
+<body class="childrenBody">
+<form class="layui-form layui-row" style="margin-top: 30px">
+
+	<div class="layui-col-md6 layui-col-xs12">
+		<div class="layui-form-item">
+			<label class="layui-form-label">员工名称</label>
+			<div class="layui-input-block">
+				<!--<input type="text" disabled class="layui-input layui-disabled">-->
+				<input type="text" lay-verify="required" class="layui-input layui-disabled name" readonly>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">设备名称</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input layui-disabled e_name" readonly>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">罚款理由</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input layui-disabled reason" readonly>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">罚款金额</label>
+			<div class="layui-input-block">
+				<input type="text" value="" lay-verify="number" class="layui-input layui-disabled total" readonly>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">缴纳状态</label>
+			<div class="layui-input-block">
+				<select name="status" lay-verify="required" id="status">
+					<option value=""></option>
+					<option value="未缴纳">未缴纳</option>
+					<option value="已缴纳">已缴纳</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn" lay-submit="" lay-filter="save" >提交</button>
+				<button type="reset" class="layui-btn layui-btn-primary" onclick="history.back(-1)">取消</button>
+			</div>
+		</div>
+	</div>
+</form>
+
+<!--<script type="text/javascript" src="/static/js/cacheUserInfo.js"></script>-->
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>设备管理系统</title>
+	<link rel="stylesheet" href="/static/layui/css/layui.css">
+	<link rel="stylesheet" href="/static/css/index.css" media="all" />
+	<script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+	<script src="/static/layui/layui.js"></script>
+</head>
+<script>
+	$(function(){
+		$("a").on("click",function(){
+			var path =$(this).attr("data-src");
+			$("iframe").attr("src",path);
+		});
+
+	});
+
+
+</script>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+	<div class="layui-header">
+		<div class="layui-logo">设备管理系统</div>
+		<!-- 头部区域（可配合layui已有的水平导航） -->
+		<ul class="layui-nav layui-layout-left">
+			<li class="layui-nav-item"><a href="">控制台</a></li>
+			<!--<li class="layui-nav-item"><a href="javascript:;" data-src="/news">新闻资讯</a></li>
+			<li class="layui-nav-item"><a href="">用户</a></li>
+			<li class="layui-nav-item">
+				<a href="javascript:;">其它系统</a>
+				<dl class="layui-nav-child">
+					<dd><a href="">邮件管理</a></dd>
+					<dd><a href="">消息管理</a></dd>
+					<dd><a href="">授权管理</a></dd>
+				</dl>
+			</li>-->
+		</ul>
+		<!--<ul class="layui-nav layui-layout-right">
+			<li class="layui-nav-item">
+				<a href="javascript:;">
+					<img src="http://t.cn/RCzsdCq" class="layui-nav-img">
+					贤心
+				</a>
+				<dl class="layui-nav-child">
+					<dd><a href="">基本资料</a></dd>
+					<dd><a href="">安全设置</a></dd>
+				</dl>
+			</li>
+			<li class="layui-nav-item"><a href="/logout">退了</a></li>
+		</ul>-->
+		<ul class="layui-nav top_menu">
+			<li class="layui-nav-item" id="userInfo">
+				<a href="javascript:;"><img src="/static/img/userface3.jpg" class="layui-nav-img userAvatar" width="35" height="35"><cite class="adminName"><span id="username">rose</span></cite></a>
+				<dl class="layui-nav-child">
+					<dd><a href="javascript:;" data-src="/userInfo"><i class="layui-icon">&#xe770;</i><cite>个人资料</cite></a></dd>
+					<dd><a href="javascript:;" data-src="/changePassword"><i class="layui-icon">&#xe673;</i></i><cite>修改密码</cite></a></dd>
+					<dd><a href="/logout" class="signOut"><i class="layui-icon">&#xe62f;</i><cite>退出</cite></a></dd>
+				</dl>
+			</li>
+		</ul>
+	</div>
+
+	<div class="layui-side layui-bg-black">
+		<div class="layui-side-scroll">
+			<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+			<ul class="layui-nav layui-nav-tree"  lay-filter="test">
+				<li class="layui-nav-item" style="margin-top: 20px;">
+					<a href="javascript:;"><i class="layui-icon">&#xe634;&nbsp;</i>首页</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/screen">首页</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item" >
+					<a href="javascript:;"><i class="layui-icon">&#xe634;&nbsp;</i>设备管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/equipmentList">设备列表</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item layui-nav-itemed">
+				<!--	<a class="" href="javascript:;"><i class="layui-icon">&#xe705;&nbsp;</i>员工管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/empList">员工列表</a></dd>
+					</dl>
+				</li>-->
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe653;&nbsp;</i>罚款管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/fineList">罚款列表</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe656;&nbsp;</i>申诉管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/appealList">申诉列表</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe663;&nbsp;</i>借阅管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/recordList1">借阅列表</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe663;&nbsp;</i>续借管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/renewList">续借列表</a></dd>
+					</dl>
+				</li>
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe770;&nbsp;</i>用户管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/userList">用户列表</a></dd>
+					</dl>
+				</li>
+				<!--<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe62a;&nbsp;</i>借阅管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/record">借阅记录</a></dd>
+					</dl>
+				</li>-->
+				<li class="layui-nav-item">
+					<a href="javascript:;"><i class="layui-icon">&#xe66a;&nbsp;</i>公告管理</a>
+					<dl class="layui-nav-child">
+						<dd><a href="javascript:;" data-src="/newsList">公告列表</a></dd>
+					</dl>
+				</li>
+				<!--<li class="layui-nav-item"><a href="">举报管理</a></li>-->
+			</ul>
+		</div>
+	</div>
+
+	<div class="layui-body">
+		<!-- 内容主体区域 -->
+		<div>
+			<iframe frameborder="0" scrolling="yes" style="width:100%;height:100%" src="/screen" id="aa">
+			</iframe>
+		</div>
+	</div>
+
+	<div class="layui-footer">
+		设备管理系统
+	</div>
+</div>
+<script>
+	//JavaScript代码区域
+	layui.use('element', function(){
+		var element = layui.element;
+		var username = window.sessionStorage.getItem("username");
+		$("#username").text(username);
+	});
+</script>
+</body>
+</html>
